@@ -607,6 +607,10 @@ https://vt.tiktok.com/ZSxxxxxx/"></textarea>
 const MAX = 50;
 let allResults = [], stats = {total:0, benar:0, salah:0}, running = false;
 
+function handleThumbError(el) {
+  el.parentElement.innerHTML = '<span class="thumb-icon">&#127916;</span>';
+}
+
 // ── On page load: check API status ──
 window.addEventListener('DOMContentLoaded', async () => {
   try {
@@ -755,7 +759,7 @@ function renderResult(i, url, info, res) {
 
   const thumbSrc = info.thumbnail ? ('/api/thumb?url=' + encodeURIComponent(info.thumbnail)) : '';
   const thumbHtml = thumbSrc
-    ? '<div class="thumb-wrap"><img src="' + esc(thumbSrc) + '" alt="" onerror="this.parentElement.innerHTML=\'<span class=thumb-icon>&#127916;</span>\'"></div>'
+    ? '<div class="thumb-wrap"><img src="' + esc(thumbSrc) + '" alt="" onerror="handleThumbError(this)"></div>'
     : '<div class="thumb-wrap"><span class="thumb-icon">&#127916;</span></div>';
 
   const keranjangHtml = info.store_name
