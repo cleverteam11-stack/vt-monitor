@@ -1025,8 +1025,8 @@ Kembalikan HANYA JSON ini (tanpa teks lain):
 {{"brand_ditemukan": "nama brand yang paling cocok atau null", "status": "BENAR" atau "SALAH", "confidence": 0-100, "alasan": "penjelasan singkat max 80 karakter"}}"""
 
         api_url = (
-            "https://generativelanguage.googleapis.com/v1/models/"
-            f"gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
+            "https://generativelanguage.googleapis.com/v1beta/models/"
+            f"gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
         )
         payload = {
             "contents": [{"parts": [{"text": prompt}]}],
