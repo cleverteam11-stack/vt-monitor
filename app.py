@@ -1000,11 +1000,6 @@ def analyze():
     creator      = data.get("creator", "")
 
     try:
-        from google import genai
-        from google.genai import types as genai_types
-
-        client = genai.Client(api_key=GEMINI_API_KEY)
-
         brand_list = "\n".join(f"{i+1}. {b}" for i, b in enumerate(BRANDS))
 
         prompt = f"""Kamu adalah sistem monitoring brand untuk agency marketing Indonesia.
@@ -1029,16 +1024,22 @@ ATURAN ANALISIS:
 Kembalikan HANYA JSON ini (tanpa teks lain):
 {{"brand_ditemukan": "nama brand yang paling cocok atau null", "status": "BENAR" atau "SALAH", "confidence": 0-100, "alasan": "penjelasan singkat max 80 karakter"}}"""
 
-        resp = client.models.generate_content(
-            model="gemini-2.0-flash",
-            contents=prompt,
-            config=genai_types.GenerateContentConfig(
-                temperature=0.1,
-                max_output_tokens=200,
-            ),
+        api_url = (
+            "https://generativelanguage.googleapis.com/v1beta/models/"
+            f"gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
         )
+        payload = {
+            "contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {
+                "temperature": 0.1,
+                "maxOutputTokens": 200,
+            },
+        }
+        r = requests.post(api_url, json=payload, timeout=30)
+        r.raise_for_status()
+        resp_data = r.json()
+        text = resp_data["candidates"][0]["content"]["parts"][0]["text"].strip()
 
-        text = resp.text.strip()
         m = re.search(r"\{.*\}", text, re.DOTALL)
         if m:
             text = m.group(0)
@@ -1048,6 +1049,8 @@ Kembalikan HANYA JSON ini (tanpa teks lain):
 
     except json.JSONDecodeError:
         return jsonify({"success": False, "error": "Respons AI tidak dapat diparsing"})
+    except requests.HTTPError as e:
+        return jsonify({"success": False, "error": f"Gemini API error: {e.response.text[:200]}"})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)[:150]})
 
