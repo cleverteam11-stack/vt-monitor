@@ -605,11 +605,14 @@ https://vt.tiktok.com/ZSxxxxxx/"></textarea>
 
 <script>
 const MAX = 50;
+const DELAY_MS = 4500;
 let allResults = [], stats = {total:0, benar:0, salah:0}, running = false;
 
 function handleThumbError(el) {
   el.parentElement.innerHTML = '<span class="thumb-icon">&#127916;</span>';
 }
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 // ── On page load: check API status ──
 window.addEventListener('DOMContentLoaded', async () => {
@@ -668,6 +671,10 @@ async function startAnalysis() {
     setProgress(i, urls.length, i + 1);
     await processOne(urls[i], i);
     setProgress(i + 1, urls.length);
+    if (i < urls.length - 1) {
+      document.getElementById('prog-label').textContent = 'Jeda sebentar untuk menghindari limit API...';
+      await sleep(DELAY_MS);
+    }
   }
 
   document.getElementById('prog-label').textContent = 'Analisis selesai!';
