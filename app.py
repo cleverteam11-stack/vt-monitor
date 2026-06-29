@@ -1000,9 +1000,10 @@ def analyze():
     creator      = data.get("creator", "")
 
     try:
-        import google.generativeai as genai
-        genai.configure(api_key=GEMINI_API_KEY)
-        model = genai.GenerativeModel("gemini-2.0-flash")
+        from google import genai
+        from google.genai import types as genai_types
+
+        client = genai.Client(api_key=GEMINI_API_KEY)
 
         brand_list = "\n".join(f"{i+1}. {b}" for i, b in enumerate(BRANDS))
 
@@ -1020,17 +1021,18 @@ DATA VIDEO TIKTOK:
 ATURAN ANALISIS:
 1. Prioritas utama: cek apakah caption/teks video atau nama produk menyebut salah satu dari 6 brand
 2. Pencocokan CASE-INSENSITIVE dan FLEKSIBEL — variasi penulisan yang jelas merujuk brand yang sama = cocok
-   Contoh: "ourfish" = "Ourfish Store", "golden paw store" = "Golden Paw", "pioonernet" ≈ "PiOONERVET Indonesia"
+   Contoh: "ourfish" = "Ourfish Store", "golden paw store" = "Golden Paw", "pioonernet" = "PiOONERVET Indonesia"
 3. Keranjang kuning (store_name/product_name) sebagai referensi tambahan, bukan penentu utama
-4. Jika TIDAK ADA indikasi brand sama sekali → status "SALAH"
-5. Jika ragu tapi ada kemungkinan cocok → turunkan confidence, status tetap "BENAR"
+4. Jika TIDAK ADA indikasi brand sama sekali maka status "SALAH"
+5. Jika ragu tapi ada kemungkinan cocok maka turunkan confidence, status tetap "BENAR"
 
 Kembalikan HANYA JSON ini (tanpa teks lain):
 {{"brand_ditemukan": "nama brand yang paling cocok atau null", "status": "BENAR" atau "SALAH", "confidence": 0-100, "alasan": "penjelasan singkat max 80 karakter"}}"""
 
-        resp = model.generate_content(
-            prompt,
-            generation_config=genai.types.GenerationConfig(
+        resp = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=prompt,
+            config=genai_types.GenerateContentConfig(
                 temperature=0.1,
                 max_output_tokens=200,
             ),
